@@ -49,14 +49,20 @@ cmake_ninja_workdir = /Users/alexanderthorbr/Library/Mobile$ Documents/com~apple
 
 build cmake_object_order_depends_target_8086EMU: phony || CMakeFiles/8086EMU.dir
 
-build CMakeFiles/8086EMU.dir/main.cpp.o: CXX_COMPILER__8086EMU_unscanned_Debug /Users/alexanderthorbr/Library/Mobile$ Documents/com~apple~CloudDocs/Documents/Programming/C++/8086EMU/main.cpp || cmake_object_order_depends_target_8086EMU
-  DEP_FILE = CMakeFiles/8086EMU.dir/main.cpp.o.d
+build CMakeFiles/8086EMU.dir/src/main.cpp.o: CXX_COMPILER__8086EMU_unscanned_Debug /Users/alexanderthorbr/Library/Mobile$ Documents/com~apple~CloudDocs/Documents/Programming/C++/8086EMU/src/main.cpp || cmake_object_order_depends_target_8086EMU
+  DEP_FILE = CMakeFiles/8086EMU.dir/src/main.cpp.o.d
   FLAGS = -g -std=gnu++17 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/8086EMU.dir
-  OBJECT_FILE_DIR = CMakeFiles/8086EMU.dir
+  OBJECT_FILE_DIR = CMakeFiles/8086EMU.dir/src
 
-build CMakeFiles/8086EMU.dir/testfile.cpp.o: CXX_COMPILER__8086EMU_unscanned_Debug /Users/alexanderthorbr/Library/Mobile$ Documents/com~apple~CloudDocs/Documents/Programming/C++/8086EMU/testfile.cpp || cmake_object_order_depends_target_8086EMU
-  DEP_FILE = CMakeFiles/8086EMU.dir/testfile.cpp.o.d
+build CMakeFiles/8086EMU.dir/src/decoder.cpp.o: CXX_COMPILER__8086EMU_unscanned_Debug /Users/alexanderthorbr/Library/Mobile$ Documents/com~apple~CloudDocs/Documents/Programming/C++/8086EMU/src/decoder.cpp || cmake_object_order_depends_target_8086EMU
+  DEP_FILE = CMakeFiles/8086EMU.dir/src/decoder.cpp.o.d
+  FLAGS = -g -std=gnu++17 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk -fcolor-diagnostics
+  OBJECT_DIR = CMakeFiles/8086EMU.dir
+  OBJECT_FILE_DIR = CMakeFiles/8086EMU.dir/src
+
+build CMakeFiles/8086EMU.dir/memory.cpp.o: CXX_COMPILER__8086EMU_unscanned_Debug /Users/alexanderthorbr/Library/Mobile$ Documents/com~apple~CloudDocs/Documents/Programming/C++/8086EMU/memory.cpp || cmake_object_order_depends_target_8086EMU
+  DEP_FILE = CMakeFiles/8086EMU.dir/memory.cpp.o.d
   FLAGS = -g -std=gnu++17 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/8086EMU.dir
   OBJECT_FILE_DIR = CMakeFiles/8086EMU.dir
@@ -69,7 +75,7 @@ build CMakeFiles/8086EMU.dir/testfile.cpp.o: CXX_COMPILER__8086EMU_unscanned_Deb
 #############################################
 # Link the executable 8086EMU
 
-build 8086EMU: CXX_EXECUTABLE_LINKER__8086EMU_Debug CMakeFiles/8086EMU.dir/main.cpp.o CMakeFiles/8086EMU.dir/testfile.cpp.o
+build 8086EMU: CXX_EXECUTABLE_LINKER__8086EMU_Debug CMakeFiles/8086EMU.dir/src/main.cpp.o CMakeFiles/8086EMU.dir/src/decoder.cpp.o CMakeFiles/8086EMU.dir/memory.cpp.o
   FLAGS = -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk
   OBJECT_DIR = CMakeFiles/8086EMU.dir
   POST_BUILD = :
