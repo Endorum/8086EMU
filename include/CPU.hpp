@@ -57,12 +57,14 @@ public:
 
     void decode();
 
-    void execute(){}
+
+    u16 combineAddress();
+    uint16_t calculateEffectiveAddress();
+    void execute();
 
 
     void handleInterrupt(u8 interruptNumber);
 
-    uint16_t calculateEffectiveAddress(uint8_t modRM, uint16_t disp);
 };
 
 

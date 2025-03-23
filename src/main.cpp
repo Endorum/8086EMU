@@ -3,6 +3,10 @@
 #include "../include/Tables.hpp"
 #include "../include/CPU.hpp"
 
+typedef struct Test {
+    u8 variable0;
+    u8 variable1;
+};
 
 int main() {
 
@@ -14,17 +18,14 @@ int main() {
     //     0x03, 0x04,
     //     0x81, 0xC6, 0x86, 0x80,
     //     0xEB, 0xF0,
+    //     0xF4
     // };
+
 
 
     u8 rom[] = {
         0xB8, 0x02, 0xF8,
-        0x50,
-        0x8B, 0xCB,
-        0x8B, 0xD1,
-        0x03, 0x04,
-        0x81, 0xC6, 0x86, 0x80,
-        0xEB, 0xF0,
+        0xF4
     };
 
     CPU cpu;
@@ -34,9 +35,9 @@ int main() {
     }
 
 
-    while(cpu.current.type != HLT) {
-        cpu.step();
-    }
+    cpu.step();
+    // while(cpu.current.type != HLT) {
+    // }
 
 
 

@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <queue>
 
-#include "memory.hpp"
 #include "Tables.hpp"
 
 class CPU;
@@ -17,70 +16,66 @@ class CPU;
 struct Instruction {
     u16 addr; // address where it began
 
-    uint8_t opcode;   // Primary opcode byte
+    u8 opcode;   // Primary opcode byte
+    u8 addBytes[6];
+
     bool w; // Word/Byte flag
     bool d; // Direction flag
 
-    u8 addBytes[6];
 
     bool hasModRM;
-    uint8_t mod;      // MOD field
-    uint8_t reg;      // REG field
-    uint8_t rm;       // R/M field
+    u8 mod;      // MOD field
+    u8 reg;      // REG field
+    u8 rm;       // R/M field
 
+    u16 disp;
 
+    u8* firstBytePtr;
+    u8* secondBytePtr;
+    u8* thirdBytePtr;
+    u8* fourthBytePtr;
 
+    u8 modRegRM;
 
+    u8 DATA8;
+    u8 DATA_SX;
+    u8 DATA_LO;
+    u8 DATA_HI;
 
+    u8 DISP_LO;
+    u8 DISP_HI;
 
-    uint16_t disp;     // Displacement value (if any)
-    uint16_t imm;     // Immediate value (if any)
+    u8 IP_LO;
+    u8 IP_HI;
 
+    u8 CS_LO;
+    u8 CS_HI;
 
+    u8 IP_INC8;
+    u8 IP_INC_LO;
+    u8 IP_INC_HI;
 
+    u8 ADDR_LO;
+    u8 ADDR_HI;
 
+    u8 XXX;
+    u8 YYY;
 
-    u16 EffAddr; // if mod != 11
+    u8 IMMED8;
+
+    u8 SEGREG;
+    u8 SEG_LO;
+    u8 SEG_HI;
+    u8 DEST_STR8;
+
+    u8 none;
 
     u8 length;
 
+    RegType regA;
+    RegType regB;
     OpcodeType type;
 };
-
-// // 6-byte prefetch queue
-// class Queue {
-// private:
-//     std::queue<uint8_t> queue;
-//     static constexpr size_t QUEUE_SIZE = 6;
-//
-// public:
-//     void enqueue(uint8_t byte) {
-//         if (queue.size() >= QUEUE_SIZE) {
-//             queue.pop(); // Maintain FIFO behavior
-//         }
-//         queue.push(byte);
-//     }
-//
-//     uint8_t dequeue() {
-//         if (queue.empty()) return 0;
-//         uint8_t byte = queue.front();
-//         queue.pop();
-//         return byte;
-//     }
-//
-//     bool isEmpty() const {
-//         return queue.empty();
-//     }
-//
-//     size_t size() const {
-//         return queue.size();
-//     }
-//
-//     void flush() {
-//         while (!queue.empty()) queue.pop();
-//     }
-// };
-
 
 // Decoder class
 class Decoder {
@@ -99,9 +94,11 @@ public:
 
     u8 decodeModRM(u8 modRM);
 
-    uint8_t decodeNoModRM();
+    u8 decodeNoModRM();
 
-    uint8_t decode(u16 ip);
+    u8 decode(u16 ip);
+
+    std::string getDataName(uint8_t *ptr) const;
 
     void printInstruction() const;
 };

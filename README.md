@@ -48,6 +48,9 @@ The decoding is rather complicated, the resource for this can be found in the Re
 | 110 | DH  | SI  |
 | 111 | BH  | DI  |
 
+mod reg rm
+00  000 100
+
 ### Register index:
 | Bits | 	Register (W=1, 16-bit) | Register (W=0, 8-bit) |
 |------|-------------------------|-----------------------|

@@ -4,6 +4,8 @@
 
 #include "../include/CPU.hpp"
 
+#include <cassert>
+
 CPU::CPU() : decoder(this) {} // Pass `this` to `Decoder`
 
 uint8_t CPU::readNext() {
@@ -20,7 +22,7 @@ uint8_t CPU::readCurrent() {
 void CPU::step() {
     fetch();
     decode();
-    execute();
+    //execute();
 }
 
 void CPU::fetch() {
@@ -35,6 +37,81 @@ void CPU::decode() {
     decoder.decode(regs.ip);
     current = decoder.current;
 }
+
+uint16_t CPU::combineAddress() {
+    if(current.length == 2) {
+        current.disp = current.addBytes[1];
+    }
+    else if(current.length == 3) {
+        current.disp  = current.addBytes[1];
+        current.disp |= (static_cast<uint16_t>(current.addBytes[2])) << 8;
+    }else {
+        current.disp  = current.addBytes[1];
+        current.disp |= (static_cast<uint16_t>(current.addBytes[2])) << 8;
+    }
+
+    return current.disp;
+}
+
+
+
+
+
+
+u16 CPU::calculateEffectiveAddress() {
+    u8 MOD = current.mod;
+    u8 RM  = current.rm;
+
+    //assert(MOD != 0b11 && "Not yet handled and also should not really happen");
+
+    u16 address = 0;
+
+    switch (RM) {
+        case 0b000: address = regs.bx + regs.si; break;  // (BX)+(SI)
+        case 0b001: address = regs.bx + regs.di; break;  // (BX)+(DI)
+        case 0b010: address = regs.bp + regs.si; break;  // (BP)+(SI)
+        case 0b011: address = regs.bp + regs.di; break;  // (BP)+(DI)
+        case 0b100: address = regs.si; break;       // (SI)
+        case 0b101: address = regs.di; break;       // (DI)
+        case 0b110:
+            if (MOD == 0b00) return current.disp;      // DIRECT ADDRESS
+            else address = regs.bp; break;          // (BP) + D8/D16
+        case 0b111: address = regs.bx; break;       // (BX)
+        default: current.type = ERROR; break;
+    }
+
+    // Apply displacement if MOD requires it
+    if (MOD == 0b01) address += static_cast<int8_t>(current.disp);   // 8-bit sign-extended displacement
+    if (MOD == 0b10) address += static_cast<int16_t>(current.disp);  // 16-bit displacement
+
+    return address;
+}
+
+void CPU::execute() {
+    u16 EA = 0;
+
+
+    // if(!current.hasModRM) {
+    //     if(current.w) {
+    //         EA = current.addBytes[0];
+    //         EA |= (static_cast<uint16_t>(current.addBytes[1])) << 8;
+    //     }else {
+    //         EA = current.addBytes[0];
+    //     }
+    //
+    // }
+
+
+
+
+    printf("EA: %04X\n",EA);
+
+
+}
+
+
+
+
 
 void CPU::handleInterrupt(uint8_t interruptNumber) {
     // Fetch interrupt vector from IVT (Interrupt Vector Table)
@@ -54,30 +131,4 @@ void CPU::handleInterrupt(uint8_t interruptNumber) {
     // Set new IP and CS
     regs.ip = offset;
     regs.cs = segment;
-}
-
-u16 CPU::calculateEffectiveAddress(u8 modRM, u16 disp) {
-    u8 MOD = (modRM >> 6) & 0b11;
-    u8 RM  = modRM & 0b111;
-
-    u16 address = 0;
-
-    switch (RM) {
-        case 0b000: address = regs.bx + regs.si; break;  // (BX)+(SI)
-        case 0b001: address = regs.bx + regs.di; break;  // (BX)+(DI)
-        case 0b010: address = regs.bp + regs.si; break;  // (BP)+(SI)
-        case 0b011: address = regs.bp + regs.di; break;  // (BP)+(DI)
-        case 0b100: address = regs.si; break;       // (SI)
-        case 0b101: address = regs.di; break;       // (DI)
-        case 0b110:
-            if (MOD == 0b00) return disp;      // DIRECT ADDRESS
-            else address = regs.bp; break;          // (BP) + D8/D16
-        case 0b111: address = regs.bx; break;       // (BX)
-    }
-
-    // Apply displacement if MOD requires it
-    if (MOD == 0b01) address += static_cast<int8_t>(disp);   // 8-bit sign-extended displacement
-    if (MOD == 0b10) address += static_cast<int16_t>(disp);  // 16-bit displacement
-
-    return address;
 }

@@ -18,6 +18,18 @@
 #define s32 int32_t
 
 
+typedef enum RegType {
+    NOREG,
+    AH, AL, AX,
+    BH, BL, BX,
+    CH, CL, CX,
+    DH, DL, DX,
+    SP, BP,
+    SI, DI,
+    IP
+}RegType;
+
+
 typedef enum OpcodeType{
     NONE,
     ERROR,
