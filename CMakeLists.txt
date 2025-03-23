@@ -8,4 +8,6 @@ add_executable(8086EMU src/main.cpp
         src/decoder.cpp
         include/decoder.hpp
         src/memory.cpp
-        include/memory.hpp)
+        include/memory.hpp
+        src/CPU.cpp
+        include/CPU.hpp)

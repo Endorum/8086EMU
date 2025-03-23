@@ -13,6 +13,10 @@
 #define u16 uint16_t
 #define u32 uint32_t
 
+#define s8 int8_t
+#define s16 int16_t
+#define s32 int32_t
+
 
 typedef enum OpcodeType{
     NONE,
@@ -154,7 +158,8 @@ inline OpcodeType getOpcodeType(u8 opc, u8 modRM) {
 
 
     if(type == Immed) {
-        switch (modRM) {
+        u8 Reg = (modRM & 0x38) >> 3;
+        switch (Reg) {
             default: type = ERROR; break;
             case 0x0: type = ADD; break;
             case 0x1: type = OR; break;
@@ -168,7 +173,8 @@ inline OpcodeType getOpcodeType(u8 opc, u8 modRM) {
     }
 
     else if(type == Shift) {
-        switch (modRM) {
+        u8 Reg = (modRM & 0x38) >> 3;
+        switch (Reg) {
             default: type = ERROR; break;
             case 0x0: type = ROL; break;
             case 0x1: type = ROR; break;
@@ -182,7 +188,8 @@ inline OpcodeType getOpcodeType(u8 opc, u8 modRM) {
     }
 
     else if(type == Grp1) {
-        switch (modRM) {
+        u8 Reg = (modRM & 0x38) >> 3;
+        switch (Reg) {
             default: type = ERROR; break;
             case 0x0: type = TEST; break;
             case 0x1: type = NONE; break;
@@ -196,7 +203,8 @@ inline OpcodeType getOpcodeType(u8 opc, u8 modRM) {
     }
 
     else if(type == Grp2) {
-        switch (modRM) {
+        u8 Reg = (modRM & 0x38) >> 3;
+        switch (Reg) {
             default: type = ERROR; break;
             case 0x0: type = INC; break;
             case 0x1: type = DEC; break;

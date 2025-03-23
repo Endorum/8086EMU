@@ -61,11 +61,17 @@ build CMakeFiles/8086EMU.dir/src/decoder.cpp.o: CXX_COMPILER__8086EMU_unscanned_
   OBJECT_DIR = CMakeFiles/8086EMU.dir
   OBJECT_FILE_DIR = CMakeFiles/8086EMU.dir/src
 
-build CMakeFiles/8086EMU.dir/memory.cpp.o: CXX_COMPILER__8086EMU_unscanned_Debug /Users/alexanderthorbr/Library/Mobile$ Documents/com~apple~CloudDocs/Documents/Programming/C++/8086EMU/memory.cpp || cmake_object_order_depends_target_8086EMU
-  DEP_FILE = CMakeFiles/8086EMU.dir/memory.cpp.o.d
+build CMakeFiles/8086EMU.dir/src/memory.cpp.o: CXX_COMPILER__8086EMU_unscanned_Debug /Users/alexanderthorbr/Library/Mobile$ Documents/com~apple~CloudDocs/Documents/Programming/C++/8086EMU/src/memory.cpp || cmake_object_order_depends_target_8086EMU
+  DEP_FILE = CMakeFiles/8086EMU.dir/src/memory.cpp.o.d
   FLAGS = -g -std=gnu++17 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/8086EMU.dir
-  OBJECT_FILE_DIR = CMakeFiles/8086EMU.dir
+  OBJECT_FILE_DIR = CMakeFiles/8086EMU.dir/src
+
+build CMakeFiles/8086EMU.dir/src/CPU.cpp.o: CXX_COMPILER__8086EMU_unscanned_Debug /Users/alexanderthorbr/Library/Mobile$ Documents/com~apple~CloudDocs/Documents/Programming/C++/8086EMU/src/CPU.cpp || cmake_object_order_depends_target_8086EMU
+  DEP_FILE = CMakeFiles/8086EMU.dir/src/CPU.cpp.o.d
+  FLAGS = -g -std=gnu++17 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk -fcolor-diagnostics
+  OBJECT_DIR = CMakeFiles/8086EMU.dir
+  OBJECT_FILE_DIR = CMakeFiles/8086EMU.dir/src
 
 
 # =============================================================================
@@ -75,7 +81,7 @@ build CMakeFiles/8086EMU.dir/memory.cpp.o: CXX_COMPILER__8086EMU_unscanned_Debug
 #############################################
 # Link the executable 8086EMU
 
-build 8086EMU: CXX_EXECUTABLE_LINKER__8086EMU_Debug CMakeFiles/8086EMU.dir/src/main.cpp.o CMakeFiles/8086EMU.dir/src/decoder.cpp.o CMakeFiles/8086EMU.dir/memory.cpp.o
+build 8086EMU: CXX_EXECUTABLE_LINKER__8086EMU_Debug CMakeFiles/8086EMU.dir/src/main.cpp.o CMakeFiles/8086EMU.dir/src/decoder.cpp.o CMakeFiles/8086EMU.dir/src/memory.cpp.o CMakeFiles/8086EMU.dir/src/CPU.cpp.o
   FLAGS = -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk
   OBJECT_DIR = CMakeFiles/8086EMU.dir
   POST_BUILD = :

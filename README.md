@@ -48,6 +48,18 @@ The decoding is rather complicated, the resource for this can be found in the Re
 | 110 | DH  | SI  |
 | 111 | BH  | DI  |
 
+### Register index:
+| Bits | 	Register (W=1, 16-bit) | Register (W=0, 8-bit) |
+|------|-------------------------|-----------------------|
+| 000  | AX                      | AL                    |  
+| 001  | CX                      | CL                    |  
+| 010  | DX                      | DL                    |  
+| 011  | BX                      | BL                    |  
+| 100  | SP                      | AH                    |  
+| 101  | BP                      | CH                    |  
+| 110  | SI                      | DH                    |  
+| 111  | DI                      | BH                    |  
+
 ### MOD != 11 (Effective Address Calculation)
 | R/M | MOD=00         | MOD=01         | MOD=10          |
 |-----|----------------|----------------|-----------------|
@@ -81,6 +93,9 @@ The 8086 has a 6 byte queue which is filled and emptied while fetching and decod
 | ADD AX, [SI]   | 03 04        |
 | ADD SI, 8086h  | 81 C6 86 80  |
 | JMP $-14       | EB F0        |
+
+
+
 
 
 # General order
