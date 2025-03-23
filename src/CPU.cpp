@@ -38,20 +38,7 @@ void CPU::decode() {
     current = decoder.current;
 }
 
-uint16_t CPU::combineAddress() {
-    if(current.length == 2) {
-        current.disp = current.addBytes[1];
-    }
-    else if(current.length == 3) {
-        current.disp  = current.addBytes[1];
-        current.disp |= (static_cast<uint16_t>(current.addBytes[2])) << 8;
-    }else {
-        current.disp  = current.addBytes[1];
-        current.disp |= (static_cast<uint16_t>(current.addBytes[2])) << 8;
-    }
 
-    return current.disp;
-}
 
 
 

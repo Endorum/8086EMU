@@ -5,39 +5,13 @@
 #include "../include/decoder.hpp"
 #include "../include/CPU.hpp" // Now we can safely include CPU.hpp
 
-void Decoder::fetch() {
 
-}
 
 uint8_t Decoder::readNext() {
     return cpu->readNext();
 }
 
 
-
-
-bool Decoder::requiresModRM(uint8_t opc) {
-    int table[256] = {
-        1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,
-        1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,
-        1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,
-        1,1,1,1,0,0,0,0,1,1,1,1,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,
-        1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1
-    };
-
-    return table[opc] > 0;
-}
 
 uint8_t Decoder::decodeModRM(uint8_t modRM) {
     u8 Mod = (modRM & 0xC0) >> 6;
@@ -189,91 +163,18 @@ uint8_t Decoder::decodeModRM(uint8_t modRM) {
     return 0;
 }
 
-uint8_t Decoder::decodeNoModRM() {
 
-    u8 opc = current.opcode;
-
-    u8 m = 0;
-
-    u8 additionalBytes[256] = {
-        m,m,m,m,1,2,0,0,m,m,m,m,1,2,0,0,
-        m,m,m,m,1,2,0,0,m,m,m,m,1,2,0,0,
-        m,m,m,m,1,2,0,0,m,m,m,m,1,2,0,0,
-        m,m,m,m,1,2,0,0,m,m,m,m,1,2,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-        m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,
-        0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,
-        2,2,2,2,0,0,0,0,1,2,0,0,0,0,0,0,
-        1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,
-        0,0,2,0,m,m,m,m,0,0,2,0,0,1,0,0,
-        m,m,m,m,1,1,0,0,m,m,m,m,m,m,m,m,
-        1,1,1,1,1,1,1,1,2,2,4,1,0,0,0,0,
-        0,0,0,0,0,0,m,m,0,0,0,0,0,0,m,m
-      //0 1 2 3 4 5 6 7 8 9 A B C D E F
-    };
-
-    u8 addBytes = additionalBytes[opc];
-
-    for(int i=0;i<addBytes;i++) {
-        current.addBytes[i] = readNext();
-    }
-
-    return addBytes;
-}
 
 
 uint8_t Decoder::decode(u16 ip) {
     current = {0};
     current.addr = ip;
 
-    u8 bytes = 0;
-
     u8 opc = readNext();
-    // bytes++;
-    //
+
     current.opcode = opc;
     current.w = (opc & 0x01) > 0;
     current.d = (opc & 0x02) > 0;
-    //
-    // const bool hasModRM = requiresModRM(opc);
-    // u8 modRM = 0xFF;
-    // if(hasModRM) {
-    //     modRM = readNext();
-    //     bytes++;
-    //     current.hasModRM = true;
-    //     current.addBytes[0] = modRM;
-    //     bytes += decodeModRM(modRM);
-    // } else {
-    //     current.hasModRM = false;
-    //     bytes += decodeNoModRM();
-    // }
-    //
-    //
-    // if(opc == 0x80) {
-    //     current.addBytes[1] = readNext();
-    //     bytes++;
-    // }
-    // if(opc == 0x81) {
-    //     current.addBytes[1] = readNext();
-    //     current.addBytes[2] = readNext();
-    //     bytes += 2;
-    // }
-    // if(opc == 0x82) {
-    //     current.addBytes[1] = readNext();
-    //     bytes += 1;
-    // }
-    // if(opc == 0x83) {
-    //     current.addBytes[1] = readNext();
-    //     bytes += 1; // signed (?)
-    // }
-    //
-
-    // current.length = bytes;
-
-    // pointer to address modes (?)
 
     u8* firstByte[256] = {
         &current.modRegRM,&current.modRegRM,&current.modRegRM,&current.modRegRM,&current.DATA8,&current.DATA_LO,&current.none,&current.none,&current.modRegRM,&current.modRegRM,&current.modRegRM,&current.modRegRM,&current.DATA8,&current.DATA_LO,&current.none,&current.none,
@@ -434,11 +335,6 @@ uint8_t Decoder::decode(u16 ip) {
 
         }
     }
-
-
-    // u8* fifthByte[] = {
-    //     &current.XXX
-    // };
 
     current.type = getOpcodeType(opc, current.modRegRM);
 

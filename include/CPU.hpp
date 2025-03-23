@@ -50,16 +50,16 @@ public:
 
     void fetch();
 
-
     u8 readNext();
 
-    uint8_t readCurrent();
+    u8 readCurrent();
 
     void decode();
 
 
-    u16 combineAddress();
+    u16 combineAddress(){}
     uint16_t calculateEffectiveAddress();
+
     void execute();
 
 

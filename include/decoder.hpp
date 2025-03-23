@@ -75,6 +75,9 @@ struct Instruction {
     RegType regA;
     RegType regB;
     OpcodeType type;
+
+
+    u16* src; // either an actual address to a register in the CPU class or as a simulated address to a virtual memory location (not physical addr!)
 };
 
 // Decoder class
@@ -87,16 +90,13 @@ public:
 
     Instruction current = {0};
 
-    void fetch();
+    void fetch(){}
 
     u8 readNext();
-    bool requiresModRM(u8 opc);
-
     u8 decodeModRM(u8 modRM);
 
-    u8 decodeNoModRM();
-
     u8 decode(u16 ip);
+
 
     std::string getDataName(uint8_t *ptr) const;
 
