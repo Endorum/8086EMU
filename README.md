@@ -1,5 +1,7 @@
 This is a simple 8086 Emulator which can take in a binary file and runs it in a virtual machine.
 
+This is a personal project. i am using CLion and CMake. 
+Feel free to fork and work with me together ;)
 
 
 # Decoding
