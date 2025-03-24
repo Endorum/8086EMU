@@ -122,6 +122,7 @@ u16 CPU::readUsingModRegRM() {
 
 void CPU::_mov() {
     printf("mov\n");
+    
 
 }
 
