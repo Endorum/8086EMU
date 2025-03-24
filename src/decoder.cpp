@@ -14,156 +14,102 @@ uint8_t Decoder::readNext() {
 
 
 uint8_t Decoder::decodeModRM(uint8_t modRM) {
-    u8 Mod = (modRM & 0xC0) >> 6;
-    u8 Reg = (modRM & 0x38) >> 3;
-    u8 RM = (modRM & 0x07);
+    u8 Mod = (modRM & 0xC0) >> 6;  // Extract Mod bits (bits 6-7)
+    u8 Reg = (modRM & 0x38) >> 3;  // Extract Reg bits (bits 3-5)
+    u8 RM  = (modRM & 0x07);       // Extract RM bits (bits 0-2)
 
     current.mod = Mod;
     current.reg = Reg;
     current.rm = RM;
 
-    if(Mod == 0b00) {
-        // no disp except if RM=0b110 then Direct address
-        if(RM == 0b110) {
-            current.ADDR_LO = readNext();
-            current.ADDR_HI = readNext();
-        }
-
-        switch (Reg) {
-            default: current.type = ERROR; return 0xFF;
-            case 0b000:
-                current.regA = (current.w) ? AX : AL;
-            break;
-            case 0b001:
-                current.regA = (current.w) ? CX : CL;
-            break;
-            case 0b010:
-                current.regA = (current.w) ? DX : DL;
-            break;
-            case 0b011:
-                current.regA = (current.w) ? BX : BL;
-            break;
-            case 0b100:
-                current.regA = (current.w) ? SP : AH;
-            break;
-            case 0b101:
-                current.regA = (current.w) ? BP : CH;
-            break;
-            case 0b110:
-                current.regA = (current.w) ? SI : DH;
-            break;
-            case 0b111:
-                current.regA = (current.w) ? DI : BH;
-            break;
-
-        }
-
+    // If Mod == 00 and RM == 110, we have a direct address (16-bit displacement)
+    if (Mod == 0b00 && RM == 0b110) {
+        current.ADDR_LO = readNext();
+        current.ADDR_HI = readNext();
     }
-    else if(Mod == 0b01) {
-        // disp_LO
-        current.DISP_LO = readNext();
-        switch (Reg) {
-            default: current.type = ERROR; return 0xFF;
-            case 0b000:
-                current.regA = (current.w) ? AX : AL;
-            break;
-            case 0b001:
-                current.regA = (current.w) ? CX : CL;
-            break;
-            case 0b010:
-                current.regA = (current.w) ? DX : DL;
-            break;
-            case 0b011:
-                current.regA = (current.w) ? BX : BL;
-            break;
-            case 0b100:
-                current.regA = (current.w) ? SP : AH;
-            break;
-            case 0b101:
-                current.regA = (current.w) ? BP : CH;
-            break;
-            case 0b110:
-                current.regA = (current.w) ? SI : DH;
-            break;
-            case 0b111:
-                current.regA = (current.w) ? DI : BH;
-            break;
-
-        }
+    // If Mod == 01 or 10, read displacement bytes
+    else if (Mod == 0b01) {
+        current.DISP_LO = readNext(); // 8-bit displacement
     }
-    else if(Mod == 0b10) {
-        // disp LO & disp HI
-        current.DISP_LO = readNext();
-        current.DISP_HI = readNext();
-
-        switch (Reg) {
-            default: current.type = ERROR; return 0xFF;
-            case 0b000:
-                current.regA = (current.w) ? AX : AL;
-            break;
-            case 0b001:
-                current.regA = (current.w) ? CX : CL;
-            break;
-            case 0b010:
-                current.regA = (current.w) ? DX : DL;
-            break;
-            case 0b011:
-                current.regA = (current.w) ? BX : BL;
-            break;
-            case 0b100:
-                current.regA = (current.w) ? SP : AH;
-            break;
-            case 0b101:
-                current.regA = (current.w) ? BP : CH;
-            break;
-            case 0b110:
-                current.regA = (current.w) ? SI : DH;
-            break;
-            case 0b111:
-                current.regA = (current.w) ? DI : BH;
-            break;
-
-        }
-    }
-    else if(Mod == 0b11) {
-        // reg mod no disp
-        current.regA = NOREG;
-        current.regB = NOREG;
-        switch (RM) {
-            default: current.type = ERROR; return 0xFF;
-            case 0b000:
-                current.regA = (current.w) ? AX : AL;
-            break;
-            case 0b001:
-                current.regA = (current.w) ? CX : CL;
-            break;
-            case 0b010:
-                current.regA = (current.w) ? DX : DL;
-            break;
-            case 0b011:
-                current.regA = (current.w) ? BX : BL;
-            break;
-            case 0b100:
-                current.regA = (current.w) ? SP : AH;
-            break;
-            case 0b101:
-                current.regA = (current.w) ? BP : CH;
-            break;
-            case 0b110:
-                current.regA = (current.w) ? SI : DH;
-            break;
-            case 0b111:
-                current.regA = (current.w) ? DI : BH;
-            break;
-
-        }
+    else if (Mod == 0b10) {
+        current.DISP_LO = readNext(); // 16-bit displacement (LO)
+        current.DISP_HI = readNext(); // 16-bit displacement (HI)
     }
 
+    // Register lookup table for REG and RM fields
+    static constexpr RegType regTableW[8] = {AX, CX, DX, BX, SP, BP, SI, DI};
+    static constexpr RegType regTableB[8] = {AL, CL, DL, BL, AH, CH, DH, BH};
+
+    current.regA = NOREG;
+    current.regB = NOREG;
+
+    // Determine if we are using word (w = 1) or byte (w = 0) registers
+    current.regA = (current.w) ? regTableW[Reg] : regTableB[Reg];
+
+    if (Mod == 0b11) {
+        // Direct register mode
+        current.regB = (current.w) ? regTableW[RM] : regTableB[RM];
+    }
 
     return 0;
 }
 
 
+u16* Decoder::regReferenceByType(RegType type) {
+    switch (type) {
+        default: return nullptr;
+        case NOREG: return nullptr;
+        case AH: case AL: case AX:
+            return &(cpu->regs.ax);
+        case BH: case BL: case BX:
+            return &(cpu->regs.bx);
+        case CH: case CL: case CX:
+            return &(cpu->regs.cx);
+        case DH: case DL: case DX:
+            return &(cpu->regs.dx);
+        case SP:
+            return &(cpu->regs.sp);
+        case BP:
+            return &(cpu->regs.bp);
+        case SI:
+            return &(cpu->regs.si);
+        case DI:
+            return &(cpu->regs.di);
+        case IP:
+            return &(cpu->regs.ip);
+
+
+
+    }
+}
+
+DataType Decoder::getDataType(uint8_t *ptr) {
+    if(ptr == &current.modRegRM) return DT_modRegRM;
+    if(ptr == &current.DATA8) return DT_DATA8;
+    if(ptr == &current.DATA_SX) return DT_DATA_SX;
+    if(ptr == &current.DATA_LO) return DT_DATA_LO;
+    if(ptr == &current.DATA_HI) return DT_DATA_HI;
+    if(ptr == &current.DISP_LO) return DT_DISP_LO;
+    if(ptr == &current.DISP_HI) return DT_DISP_HI;
+    if(ptr == &current.IP_LO) return DT_IP_LO;
+    if(ptr == &current.IP_HI) return DT_IP_HI;
+    if(ptr == &current.CS_LO) return DT_CS_LO;
+    if(ptr == &current.CS_HI) return DT_CS_HI;
+    if(ptr == &current.IP_INC8) return DT_IP_INC8;
+    if(ptr == &current.IP_INC_LO) return DT_IP_INC_LO;
+    if(ptr == &current.IP_INC_HI) return DT_IP_INC_HI;
+    if(ptr == &current.ADDR_LO) return DT_ADDR_LO;
+    if(ptr == &current.ADDR_HI) return DT_ADDR_HI;
+    if(ptr == &current.XXX) return DT_XXX;
+    if(ptr == &current.YYY) return DT_YYY;
+    if(ptr == &current.IMMED8) return DT_IMMED8;
+    if(ptr == &current.SEGREG) return DT_SEGREG;
+    if(ptr == &current.SEG_LO) return DT_SEG_LO;
+    if(ptr == &current.SEG_HI) return DT_SEG_HI;
+    if(ptr == &current.DEST_STR8) return DT_DEST_STR8;
+    if(ptr == &current.none) return DT_none;
+    return DT_none;
+}
 
 
 uint8_t Decoder::decode(u16 ip) {
@@ -338,11 +284,39 @@ uint8_t Decoder::decode(u16 ip) {
 
     current.type = getOpcodeType(opc, current.modRegRM);
 
-    printInstruction();
 
+    current.firstType = getDataType(current.firstBytePtr);
+    current.secondType = getDataType(current.secondBytePtr);
+    current.thirdType = getDataType(current.thirdBytePtr);
+    current.fourthType = getDataType(current.fourthBytePtr);
+
+
+
+    printInstruction();
     return 0;
 }
 
+
+
+
+NewInstruction Decoder::fillNewInstruction() {
+
+    NewInstruction res;
+
+    u8 opc = readNext();
+
+    res.opcType = getOpcodeType(opc, readNext()); cpu->regs.ip--;
+
+    res.ArgAddr0 = getArgAddrCodeFirst(opc);
+    res.ArgOp0 = getArgOperandCodeFirst(opc);
+
+    res.ArgAddr1 = getArgAddrCodeSecond(opc);
+    res.ArgOp1 = getArgOperandCodeSecond(opc);
+
+
+    cpu->regs.ip--;
+
+}
 
 
 std::string interpretMod(u8 Mod) {
@@ -350,6 +324,7 @@ std::string interpretMod(u8 Mod) {
     if(Mod == 0b01) return "Memory mode, 8-bit displacement follows                                                        ";
     if(Mod == 0b10) return "Memory mode, 16-bit displacement follows                                                       ";
     if(Mod == 0b11) return "Register mode, no displacement follows                                                         ";
+    return "";
 }
 
 std::string interpretReg(u8 Reg, bool w) {
@@ -360,7 +335,7 @@ std::string interpretReg(u8 Reg, bool w) {
     if(Reg == 0b100) return (w) ? "SP" : "AH";
     if(Reg == 0b101) return (w) ? "BP" : "CH";
     if(Reg == 0b110) return (w) ? "SI" : "DH";
-    if(Reg == 0b111) return (w) ? "DI" : "BH";
+    return (w) ? "DI" : "BH";
 }
 
 std::string interpretRM(u8 RM, u8 Mod, bool w) {
@@ -440,47 +415,92 @@ std::string Decoder::getDataName(u8* ptr) const {
     if(ptr == &current.SEG_LO) return "SEG_LO";
     if(ptr == &current.SEG_HI) return "SEG_HI";
     if(ptr == &current.DEST_STR8) return "DEST_STR8";
-    if(ptr == &current.none) return "none";
+    return "none";
+}
+
+u8 Decoder::getValue(DataType dtype) const {
+    switch (dtype) {
+        default: return 0xFF;
+        case DT_modRegRM: return current.modRegRM;
+        case DT_DATA8: return current.DATA8;
+        case DT_DATA_SX: return current.DATA_SX;
+        case DT_DATA_LO: return current.DATA_LO;
+        case DT_DATA_HI: return current.DATA_HI;
+        case DT_DISP_LO: return current.DISP_LO;
+        case DT_DISP_HI: return current.DISP_HI;
+        case DT_IP_LO: return current.IP_LO;
+        case DT_IP_HI: return current.IP_HI;
+        case DT_CS_LO: return current.CS_LO;
+        case DT_CS_HI: return current.CS_HI;
+        case DT_IP_INC8: return current.IP_INC8;
+        case DT_IP_INC_LO: return current.IP_INC_LO;
+        case DT_IP_INC_HI: return current.IP_INC_HI;
+        case DT_ADDR_LO: return current.ADDR_LO;
+        case DT_ADDR_HI: return current.ADDR_HI;
+        case DT_XXX: return current.XXX;
+        case DT_YYY: return current.YYY;
+        case DT_IMMED8: return current.IMMED8;
+        case DT_SEGREG: return current.SEGREG;
+        case DT_SEG_LO: return current.SEG_LO;
+        case DT_SEG_HI: return current.SEG_HI;
+        case DT_DEST_STR8: return current.DEST_STR8;
+        case DT_none: return current.none;
+    }
 }
 
 void Decoder::printInstruction() const {
-    u8 firstByte = (current.firstBytePtr != nullptr) ? *current.firstBytePtr : 0x0;
-    u8 secondByte = (current.secondBytePtr != nullptr) ? *current.secondBytePtr : 0x0;
-    u8 thirdByte = (current.thirdBytePtr != nullptr) ? *current.thirdBytePtr : 0x0;
-    u8 fourthByte = (current.fourthBytePtr != nullptr) ? *current.fourthBytePtr : 0x0;
-    printf("Instruction at %04X: %02X %02X %02X %02X\n", current.addr, current.opcode, firstByte, secondByte, thirdByte, fourthByte);
-    printf("    %s\n", getOpcodeMnemonic(current.type).c_str());
-    printf("    Wordmode:  %s -> %s\n",(current.w) ? "true" : "false", (current.w) ? "working with words" : "working with bytes");
-    printf("    Direction: %s -> %s\n",(current.d) ? "true" : "false", (current.d) ? "Reg field specifies the source" : "Reg field specifies the destination");
+    printf("Instruction at %04X\n",current.addr);
+    printf("Operation:  %02X -> %s\n",current.opcode,getOpcodeMnemonic(current.type).c_str());
 
-    if (current.hasModRM) {
-        printf("        Mod: %01X -> %s \n", current.mod, interpretMod(current.mod).c_str());
-        printf("        Reg: %01X -> %s \n", current.reg, interpretReg(current.reg, current.w).c_str());
-        printf("         RM: %01X -> %s \n", current.rm, interpretRM(current.rm, current.mod, current.w).c_str());
-        printf("\n");
+    if(current.firstType != DT_none) {
+        if(current.firstType == DT_modRegRM) {
+            printf("First Arg Byte:\n");
+            printf("    Type:  %s\n",getDataName(current.firstBytePtr).c_str());
+            printf("    Value: %02X\n",getValue(current.firstType));
+            printf("        Mod: %01X\n",current.mod);
+            printf("        Reg: %01X\n",current.reg);
+            printf("        R/M: %01X\n",current.rm);
+        }else {
+            printf("First Arg Byte:\n");
+            printf("    Type:  %s\n",getDataName(current.firstBytePtr).c_str());
+            printf("    Value: %02X\n",getValue(current.firstType));
+        }
     }
 
-
-    if(true) {
-
-        if(current.firstBytePtr != &current.none) printf("%s: %02X\n",getDataName(current.firstBytePtr).c_str(),firstByte);
-        if(current.secondBytePtr != &current.none) printf("%s: %02X\n",getDataName(current.secondBytePtr).c_str(),secondByte);
-        if(current.thirdBytePtr != &current.none) printf("%s: %02X\n",getDataName(current.thirdBytePtr).c_str(),thirdByte);
-        if(current.fourthBytePtr != &current.none) printf("%s: %02X\n",getDataName(current.fourthBytePtr).c_str(),fourthByte);
-
-        std::string regNames[18] = {
-            "",
-            "AH", "AL", "AX",
-            "BH", "BL", "BX",
-            "CH", "CL", "CX",
-            "DH", "DL", "DX",
-            "SP", "BP",
-            "SI", "DI",
-            "IP"
-        };
-        if(current.regA != NOREG) printf("regA: %s\n", regNames[current.regA].c_str());
-        if(current.regB != NOREG) printf("regB: %s\n", regNames[current.regB].c_str());
+    if(current.secondType != DT_none) {
+        printf("Second Arg Byte:\n");
+        printf("    Type:  %s\n",getDataName(current.secondBytePtr).c_str());
+        printf("    Value: %02X\n",getValue(current.secondType));
     }
 
-    printf("\n");
+    if(current.thirdType != DT_none) {
+        printf("Third Arg Byte:\n");
+        printf("    Type:  %s\n",getDataName(current.thirdBytePtr).c_str());
+        printf("    Value: %02X\n",getValue(current.thirdType));
+    }
+
+    if(current.fourthType != DT_none) {
+        printf("Fourth Arg Byte:\n");
+        printf("    Type:  %s\n",getDataName(current.fourthBytePtr).c_str());
+        printf("    Value: %02X\n",getValue(current.fourthType));
+    }
+
+    if(current.firstType == DT_modRegRM) {
+        if(current.mod == 0b01) {
+            printf("DISP: %02X\n",current.DISP_LO);
+        }
+        if(current.mod == 0b10) {
+            printf("DISP_LO: %02X\n",current.DISP_LO);
+            printf("DISP_HI: %02X\n",current.DISP_HI);
+        }
+    }
+
+    if(current.regA != NOREG) {
+        printf("RegA: %s\n", getRegTypeName(current.regA).c_str());
+    }
+
+    if(current.regB != NOREG) {
+        printf("RegB: %s\n", getRegTypeName(current.regB).c_str());
+    }
+
 }

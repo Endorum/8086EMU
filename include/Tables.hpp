@@ -18,6 +18,33 @@
 #define s32 int32_t
 
 
+typedef enum DataType {
+    DT_modRegRM,
+    DT_DATA8,
+    DT_DATA_SX,
+    DT_DATA_LO,
+    DT_DATA_HI,
+    DT_DISP_LO,
+    DT_DISP_HI,
+    DT_IP_LO,
+    DT_IP_HI,
+    DT_CS_LO,
+    DT_CS_HI,
+    DT_IP_INC8,
+    DT_IP_INC_LO,
+    DT_IP_INC_HI,
+    DT_ADDR_LO,
+    DT_ADDR_HI,
+    DT_XXX,
+    DT_YYY,
+    DT_IMMED8,
+    DT_SEGREG,
+    DT_SEG_LO,
+    DT_SEG_HI,
+    DT_DEST_STR8,
+    DT_none,
+}DataType;
+
 typedef enum RegType {
     NOREG,
     AH, AL, AX,
@@ -28,6 +55,28 @@ typedef enum RegType {
     SI, DI,
     IP
 }RegType;
+
+inline std::string getRegTypeName(RegType type) {
+    if(type == NOREG) return "NOREG";
+    if(type == AH) return "AH";
+    if(type == AL) return "AL";
+    if(type == AX) return "AX";
+    if(type == BH) return "BH";
+    if(type == BL) return "BL";
+    if(type == BX) return "BX";
+    if(type == CH) return "CH";
+    if(type == CL) return "CL";
+    if(type == CX) return "CX";
+    if(type == DH) return "DH";
+    if(type == DL) return "DL";
+    if(type == DX) return "DX";
+    if(type == SP) return "SP";
+    if(type == BP) return "BP";
+    if(type == SI) return "SI";
+    if(type == DI) return "DI";
+    if(type == IP) return "IP";
+    return "";
+}
 
 
 typedef enum OpcodeType{
@@ -232,6 +281,143 @@ inline OpcodeType getOpcodeType(u8 opc, u8 modRM) {
     return type;
 }
 
+typedef enum AddrCode {
+    _0,     // none
+    A,      // Direct address. The instruction has no ModR/M byte; the address of the operand is encoded in the instruction. Applicable, e.g., to far JMP (opcode EA).
+    E,      // A ModR/M byte follows the opcode and specifies the operand. The operand is either a general-purpose register or a memory address. If it is a memory address, the address is computed from a segment register and any of the following values: a base register, an index register, a displacement.
+    G,      // The reg field of the ModR/M byte selects a general register.
+    I,      // Immediate data. The operand value is encoded in subsequent bytes of the instruction.
+    J,      // The instruction contains a relative offset to be added to the address of the subsequent instruction. Applicable, e.g., to short JMP (opcode EB), or LOOP.
+    M,      // The ModR/M byte may refer only to memory. Applicable, e.g., to LES and LDS.
+    O,      // The instruction has no ModR/M byte; the offset of the operand is encoded as a WORD in the instruction. Applicable, e.g., to certain MOVs (opcodes A0 through A3).
+    S,      // The reg field of the ModR/M byte selects a segment register.
+
+    b,      // Byte argument.
+    p,      // 32-bit segment:offset pointer.
+    w,      // Word argument
+    v,      // Word argument. (The 'v' code has a more complex meaning in later x86 opcode maps, from which this was derived, but here it's just a synonym for the 'w' code.)
+
+    AH_, AL_, AX_,
+    BH_, BL_, BX_,
+    CH_, CL_, CX_,
+    DH_, DL_, DX_,
+    SP_, BP_,
+    SI_, DI_,
+    IP_,
+
+    ES_, CS_, SS_, DS_,
+
+    _1, // A constant argument of 1, implicit in the opcode, and not represented elsewhere in the instruction. This argument *is* displayed in assembly code.
+    _3, // A constant argument of 3, implicit in the opcode, and not represented elsewhere in the instruction. This argument *is* displayed in assembly code.
+
+
+}AddrCode;
+
+inline AddrCode getArgAddrCodeFirst(u8 opc) {
+    AddrCode table[256] = {
+        E, E, G, G, AL_, AX_, ES_, ES_, E, E, G, G, AL_, AX_, CS_, _0,
+        E, E, G, G, AL_, AX_, SS_, SS_, E, E, G, G, AL_, AX_, DS_, DS_,
+        E, E, G, G, AL_, AX_,  _0,  _0, E, E, G, G, AL_, AX_,  _0,  _0,
+        E, E, G, G, AL_, AX_,  _0,  _0, E, E, G, G, AL_, AX_,  _0,  _0,
+        AX_, CX_, DX_, BX_, SP_, BP_, SI_, DI_, AX_, CX_, DX_, BX_, SP_, BP_, SI_, DI_,
+        AX_, CX_, DX_, BX_, SP_, BP_, SI_, DI_, AX_, CX_, DX_, BX_, SP_, BP_, SI_, DI_,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        J, J, J, J, J, J, J, J, J, J, J, J, J, J, J, J,
+        E, E, E, E, G, G, G, G, E, E, G, G, E, G, S, E,
+        _0, CX_, DX_, BX_, SP_, BP_, SI_, DI_, _0, _0, A, _0, _0, _0, _0, _0,
+        AL_, AX_, O, O, _0, _0, _0, _0, A, A, _0, _0, _0, _0, _0, _0,
+        AL_, CL_, DL_, BL_, AH_, CH_, DH_, BH_, AX_, CX_, DX_, BX_, SP_, BP_, SI_, DI_,
+        _0, _0, I, _0, G, G, E, E, _0, _0, I, _3, I, _0, _0,
+        E, E, E, E, I, I, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        J, J, J, J, AL_, AX_, I, I, J, J, A, J, AL_, AX_, DX_, DX_,
+        _0, _0, _0, _0, _0, _0, E, E, _0, _0, _0, _0, _0, _0, E, E,
+    };
+
+    return table[opc];
+}
+
+inline AddrCode getArgAddrCodeSecond(u8 opc) {
+    AddrCode table[256] = {
+        G, G, E, E, I, I, _0, _0, G, G, E, E, I, I, _0, _0,
+        G, G, E, E, I, I, _0, _0, G, G, E, E, I, I, _0, _0,
+        G, G, E, E, I, I, _0, _0, G, G, E, E, I, I, _0, _0,
+        G, G, E, E, I, I, _0, _0, G, G, E, E, I, I, _0, _0,
+
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+
+        I, I, I, I, E, E, E, E, G, G, E, E, S, M, E, _0,
+        _0, AX_, AX_, AX_, AX_, AX_, AX_, AX_, _0, _0, _0, _0, _0, _0, _0, _0,
+        O, O, AL_, AX_, _0, _0, _0, _0, I, I, _0, _0, _0, _0, _0, _0,
+        I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,
+
+        _0, _0, _0, _0, M, M, I, I, _0, _0, _0, _0, _0, _0, _0, _0,
+        _1, _1, CL_, CL_, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        _0, _0, _0, _0, I, I, AL_, AX_, _0, _0, _0, _0, DX_, DX_, AL_, AX_,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+    };
+
+    return table[opc];
+}
+
+inline AddrCode getArgOperandCodeFirst(u8 opc) {
+    AddrCode table[256] = {
+        b, v, b, v, _0, _0, _0, _0, b, v, b, v, _0, _0, _0, _0,
+        b, v, b, v, _0, _0, _0, _0, b, v, b, v, _0, _0, _0, _0,
+        b, v, b, v, _0, _0, _0, _0, b, v, b, v, _0, _0, _0, _0,
+        b, v, b, v, _0, _0, _0, _0, b, v, b, v, _0, _0, _0, _0,
+
+        _0, _0, _0, _0,_0, _0, _0, _0, _0, _0, _0, _0,_0, _0, _0, _0,
+        _0, _0, _0, _0,_0, _0, _0, _0, _0, _0, _0, _0,_0, _0, _0, _0,
+        _0, _0, _0, _0,_0, _0, _0, _0, _0, _0, _0, _0,_0, _0, _0, _0,
+        b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b,
+
+        b, v, b, v, b, v, b, v,  b, v, b, v, w, v, w, v,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, p, _0, _0, _0, _0, _0,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+
+        _0, _0, w, _0, v, v, b, v, _0, _0, w, _0, _0, b, _0, _0,
+        b, v, b, v, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        b, b, b, b, _0, _0, b, b, v, v, p, b, _0, _0, _0, _0,
+        _0, _0, _0, _0, _0, _0, b, v, _0, _0, _0, _0, _0, _0, b, v,
+
+    };
+
+    return table[opc];
+}
+
+inline AddrCode getArgOperandCodeSecond(u8 opc) {
+    AddrCode table[256] = {
+        b, v, b, v, b, v, _0, _0,  b, v, b, v, b, v, _0, _0,
+        b, v, b, v, b, v, _0, _0,  b, v, b, v, b, v, _0, _0,
+        b, v, b, v, b, v, _0, _0,  b, v, b, v, b, v, _0, _0,
+        b, v, b, v, b, v, _0, _0,  b, v, b, v, b, v, _0, _0,
+
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+
+        b, v, b, b, b, v, b, v,  b, v, b, v, w, _0, w, v,
+        _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0, _0,
+        b, v, _0, _0, _0, _0, _0, _0, b, v, _0, _0, _0, _0, _0, _0,
+        b, b, b, b, b, b, b, b, v, v, v, v, v, v, v, v,
+
+        _0, _0, _0, _0, p, p, b, v,  _0, _0, _0, _0, _0, _0, _0, _0,
+        _1, _1, _0, _0, _0, _0, _0, _0,  _0, _0, _0, _0, _0, _0, _0, _0,
+        _0, _0, _0, _0, b, b, _0, _0,  _0, _0, _0, _0, _0, _0, _0, _0,
+        _0, _0, _0, _0, _0, _0, _0, _0,  _0, _0, _0, _0, _0, _0, _0, _0,
+
+    };
+
+    return table[opc];
+}
+
+
+
 inline std::string getOpcodeMnemonic(OpcodeType type) {
     std::string table[] = {
         "NONE",
@@ -334,4 +520,9 @@ inline std::string getOpcodeMnemonic(OpcodeType type) {
 
     return table[type];
 }
+
+
+
+
+
 #endif //TABLES_HPP

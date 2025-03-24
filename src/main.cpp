@@ -3,10 +3,6 @@
 #include "../include/Tables.hpp"
 #include "../include/CPU.hpp"
 
-typedef struct Test {
-    u8 variable0;
-    u8 variable1;
-};
 
 int main() {
 
@@ -24,7 +20,7 @@ int main() {
 
 
     u8 rom[] = {
-        0xB8, 0x02, 0xF8,
+        0x8B, 0xCB,
         0xF4
     };
 

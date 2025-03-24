@@ -57,8 +57,16 @@ public:
     void decode();
 
 
-    u16 combineAddress(){}
+
     uint16_t calculateEffectiveAddress();
+
+    uint16_t readRegister(uint8_t idx);
+
+    uint16_t readUsingModRegRM();
+
+    void _mov();
+    void _add();
+    void _jmp();
 
     void execute();
 

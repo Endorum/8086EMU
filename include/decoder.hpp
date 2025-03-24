@@ -12,6 +12,16 @@
 
 class CPU;
 
+struct NewInstruction {
+    OpcodeType opcType;
+
+    AddrCode ArgAddr0;
+    AddrCode ArgOp0;
+
+    AddrCode ArgAddr1;
+    AddrCode ArgOp1;
+};
+
 // Structure to represent a decoded instruction
 struct Instruction {
     u16 addr; // address where it began
@@ -31,9 +41,16 @@ struct Instruction {
     u16 disp;
 
     u8* firstBytePtr;
+    DataType firstType;
+
     u8* secondBytePtr;
+    DataType secondType;
+
     u8* thirdBytePtr;
+    DataType thirdType;
+
     u8* fourthBytePtr;
+    DataType fourthType;
 
     u8 modRegRM;
 
@@ -78,6 +95,7 @@ struct Instruction {
 
 
     u16* src; // either an actual address to a register in the CPU class or as a simulated address to a virtual memory location (not physical addr!)
+    u16* dst; // ....
 };
 
 // Decoder class
@@ -95,10 +113,20 @@ public:
     u8 readNext();
     u8 decodeModRM(u8 modRM);
 
+    uint16_t *regReferenceByType(RegType type);
+
+
+    DataType getDataType(u8* ptr);
     u8 decode(u16 ip);
+
+    NewInstruction fillNewInstruction();
+
+    void setRegSrcDst();
 
 
     std::string getDataName(uint8_t *ptr) const;
+
+    uint8_t getValue(DataType dtype) const;
 
     void printInstruction() const;
 };

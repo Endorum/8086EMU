@@ -21,8 +21,8 @@ uint8_t CPU::readCurrent() {
 
 void CPU::step() {
     fetch();
-    decode();
-    //execute();
+    decoder.fillNewInstruction();
+    execute();
 }
 
 void CPU::fetch() {
@@ -74,24 +74,39 @@ u16 CPU::calculateEffectiveAddress() {
     return address;
 }
 
+u16 CPU::readRegister(u8 idx) { // idx = reg or rm
+    switch (idx) {
+        default: return 0xFFFF;
+        case 0b000:
+    }
+}
+
+u16 CPU::readUsingModRegRM() {
+    if(current.mod == 0b11) {
+
+    }
+}
+
+void CPU::_mov() {
+
+}
+
+void CPU::_add() {
+
+}
+
+void CPU::_jmp() {
+
+}
+
+
 void CPU::execute() {
-    u16 EA = 0;
 
 
-    // if(!current.hasModRM) {
-    //     if(current.w) {
-    //         EA = current.addBytes[0];
-    //         EA |= (static_cast<uint16_t>(current.addBytes[1])) << 8;
-    //     }else {
-    //         EA = current.addBytes[0];
-    //     }
-    //
-    // }
+    if(current.type == MOV) {
+        _mov();
+    }
 
-
-
-
-    printf("EA: %04X\n",EA);
 
 
 }
