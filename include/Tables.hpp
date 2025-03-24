@@ -187,8 +187,13 @@ typedef enum OpcodeType{
     WAIT,
     ESC,
     LOCK,
-    SEGMENT
+    SEGMENT,
 
+
+    SEG_ES,
+    SEG_SS,
+    SEG_CS,
+    SEG_DS,
 
 
 
@@ -199,8 +204,8 @@ inline OpcodeType getOpcodeType(u8 opc, u8 modRM) {
     OpcodeType opTypeLookUp[] = {
         ADD,    ADD,    ADD,    ADD,    ADD,    ADD,    PUSH,   POP,    OR,     OR,     OR,     OR,     OR,     OR,     PUSH,   NONE,
         ADC,    ADC,    ADC,    ADC,    ADC,    ADC,    PUSH,   POP,    SBB,    SBB,    SBB,    SBB,    SBB,    SBB,    PUSH,   POP,
-        AND,    AND,    AND,    AND,    AND,    AND,    SEGMENT,DAA,    SUB,    SUB,    SUB,    SUB,    SUB,    SUB,    SEGMENT,DAS,
-        XOR,    XOR,    XOR,    XOR,    XOR,    XOR,    SEGMENT,AAA,    CMP,    CMP,    CMP,    CMP,    CMP,    CMP,    SEGMENT,AAS,
+        AND,    AND,    AND,    AND,    AND,    AND,    SEG_ES, DAA,    SUB,    SUB,    SUB,    SUB,    SUB,    SUB,    SEG_CS, DAS,
+        XOR,    XOR,    XOR,    XOR,    XOR,    XOR,    SEG_SS, AAA,    CMP,    CMP,    CMP,    CMP,    CMP,    CMP,    SEG_DS,AAS,
         INC,    INC,    INC,    INC,    INC,    INC,    INC,    INC,    DEC,    DEC,    DEC,    DEC,    DEC,    DEC,    DEC,    DEC,
         PUSH,   PUSH,   PUSH,   PUSH,   PUSH,   PUSH,   PUSH,   PUSH,   POP,    POP,    POP,    POP,    POP,    POP,    POP,    POP,
         NONE,   NONE,   NONE,   NONE,   NONE,   NONE,   NONE,   NONE,   NONE,   NONE,   NONE,   NONE,   NONE,   NONE,   NONE,   NONE,

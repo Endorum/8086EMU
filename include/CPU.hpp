@@ -62,6 +62,12 @@ public:
 
     uint16_t readRegister(uint8_t idx);
 
+    void writeRegister(uint8_t idx, uint16_t value);
+
+    uint8_t readByte(uint16_t addr) const;
+
+    void writeByte(uint16_t addr, uint8_t byte);
+
     uint16_t readUsingModRegRM();
 
     void _mov();

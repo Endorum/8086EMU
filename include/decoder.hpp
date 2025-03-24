@@ -13,6 +13,15 @@
 class CPU;
 
 struct NewInstruction {
+    u8 opcode;
+
+    u8 mod;      // MOD field
+    u8 reg;      // REG field
+    u8 rm;       // R/M field
+
+    bool w; // Word/Byte flag
+    bool d; // Direction flag
+
     OpcodeType opcType;
 
     AddrCode ArgAddr0;
@@ -20,6 +29,15 @@ struct NewInstruction {
 
     AddrCode ArgAddr1;
     AddrCode ArgOp1;
+
+    u8 DISP_LO;
+    u8 DISP_HI;
+
+    u8 DATA_LO;
+    u8 DATA_HI;
+
+    u8 ADDR_LO;
+    u8 ADDR_HI;
 };
 
 // Structure to represent a decoded instruction

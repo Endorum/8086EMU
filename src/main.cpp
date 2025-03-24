@@ -20,7 +20,7 @@ int main() {
 
 
     u8 rom[] = {
-        0x8B, 0xCB,
+        0xB8, 0x02, 0xF8,
         0xF4
     };
 

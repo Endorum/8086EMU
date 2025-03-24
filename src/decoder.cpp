@@ -314,6 +314,22 @@ NewInstruction Decoder::fillNewInstruction() {
     res.ArgOp1 = getArgOperandCodeSecond(opc);
 
 
+    switch (res.ArgAddr0) {
+        default: return res;
+        case _0: break;
+        case A:  // direct address
+
+            break;
+        case E: break;
+        case G: break;
+        case I: break;
+        case J: break;
+        case M: break;
+        case O: break;
+        case S: break;
+    }
+
+
     cpu->regs.ip--;
 
 }

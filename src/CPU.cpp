@@ -21,7 +21,8 @@ uint8_t CPU::readCurrent() {
 
 void CPU::step() {
     fetch();
-    decoder.fillNewInstruction();
+    decoder.decode(regs.ip);
+    current = decoder.current;
     execute();
 }
 
@@ -77,8 +78,40 @@ u16 CPU::calculateEffectiveAddress() {
 u16 CPU::readRegister(u8 idx) { // idx = reg or rm
     switch (idx) {
         default: return 0xFFFF;
-        case 0b000:
+        case 0b000: return (current.w) ? regs.ax : (regs.ax) & 0x00FF;
+        case 0b001: return (current.w) ? regs.cx : (regs.cx) & 0x00FF;
+        case 0b010: return (current.w) ? regs.dx : (regs.dx) & 0x00FF;
+        case 0b011: return (current.w) ? regs.bx : (regs.bx) & 0x00FF;
+
+        case 0b100: return (current.w) ? regs.sp : ((regs.ax) & 0xFF00) >> 8;
+        case 0b101: return (current.w) ? regs.bp : ((regs.cx) & 0xFF00) >> 8;
+        case 0b110: return (current.w) ? regs.si : ((regs.dx) & 0xFF00) >> 8;
+        case 0b111: return (current.w) ? regs.di : ((regs.bx) & 0xFF00) >> 8;
     }
+}
+
+void CPU::writeRegister(u8 idx, u16 value) {
+    switch (idx) {
+        default: return;
+        case 0b000: (current.w) ? regs.ax = value : regs.ax |= value & 0x00FF;
+        case 0b001: (current.w) ? regs.cx = value : regs.cx |= value & 0x00FF;
+        case 0b010: (current.w) ? regs.dx = value : regs.dx |= value & 0x00FF;
+        case 0b011: (current.w) ? regs.bx = value : regs.bx |= value & 0x00FF;
+
+        case 0b100: (current.w) ? regs.sp = value : regs.ax |= ((value & 0xFF00) >> 8);
+        case 0b101: (current.w) ? regs.bp = value : regs.cx |= ((value & 0xFF00) >> 8);
+        case 0b110: (current.w) ? regs.si = value : regs.dx |= ((value & 0xFF00) >> 8);
+        case 0b111: (current.w) ? regs.di = value : regs.bx |= ((value & 0xFF00) >> 8);
+    }
+}
+
+// reading using seg = DS
+u8 CPU::readByte(u16 addr) const {
+    return mem.read(regs.ds, addr);
+}
+
+void CPU::writeByte(u16 addr, u8 byte) {
+    return mem.write(regs.ds, addr, byte);
 }
 
 u16 CPU::readUsingModRegRM() {
@@ -88,6 +121,7 @@ u16 CPU::readUsingModRegRM() {
 }
 
 void CPU::_mov() {
+    printf("mov\n");
 
 }
 
