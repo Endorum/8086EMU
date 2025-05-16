@@ -44,76 +44,98 @@ struct NewInstruction {
 struct Instruction {
     u16 addr; // address where it began
 
-    u8 opcode;   // Primary opcode byte
-    u8 addBytes[6];
+    /*
+    1st byte ->
+    d -> direction (0) ? instruciton source is spec. in REG field : instr dst is spec. in REG field
+    w -> word -> 2bytes data/addr etc instead of 1
+    */
 
+    u8 opcode;   // Primary opcode byte
     bool w; // Word/Byte flag
     bool d; // Direction flag
+    
+    /*
+    2nd byte -> 
+    ModRM -> mod reg rm
+    Data-8
+    Data-LO
+    IP-INC8
+    DISP-LO
+    ADDR-LO
+    IP-INC-LO
+    IP-LO
+    */
+    u8 secondByte;
 
-
-    bool hasModRM;
     u8 mod;      // MOD field
     u8 reg;      // REG field
     u8 rm;       // R/M field
 
-    u16 disp;
-
-    u8* firstBytePtr;
-    DataType firstType;
-
-    u8* secondBytePtr;
-    DataType secondType;
-
-    u8* thirdBytePtr;
-    DataType thirdType;
-
-    u8* fourthBytePtr;
-    DataType fourthType;
-
-    u8 modRegRM;
-
-    u8 DATA8;
-    u8 DATA_SX;
-    u8 DATA_LO;
-    u8 DATA_HI;
-
-    u8 DISP_LO;
-    u8 DISP_HI;
-
-    u8 IP_LO;
-    u8 IP_HI;
-
-    u8 CS_LO;
-    u8 CS_HI;
-
-    u8 IP_INC8;
-    u8 IP_INC_LO;
-    u8 IP_INC_HI;
-
-    u8 ADDR_LO;
-    u8 ADDR_HI;
-
-    u8 XXX;
-    u8 YYY;
-
-    u8 IMMED8;
-
-    u8 SEGREG;
-    u8 SEG_LO;
-    u8 SEG_HI;
-    u8 DEST_STR8;
-
-    u8 none;
-
-    u8 length;
-
-    RegType regA;
-    RegType regB;
-    OpcodeType type;
+    u8 b2_modRegRM;
+    u8 b2_DATA_8;
+    u8 b2_DATA_LO;
+    u8 b2_IP_INC8;
+    u8 b2_DISP_LO;
+    u8 b2_ADDR_LO;
+    u8 b2_IP_INC_LO;
+    u8 b2_IP_LO;
 
 
-    u16* src; // either an actual address to a register in the CPU class or as a simulated address to a virtual memory location (not physical addr!)
-    u16* dst; // ....
+    /*
+    3rd byte ->
+    DISP-LO
+    DISP-HI
+    DATA-8
+    DATA-LO
+    DATA-HI
+    DATA-SX
+    ADDR-HI
+    IP-INC-HI
+    IP-HI
+    */
+    u8 byte3;
+    u8 b3_DISP_LO;
+    u8 b3_DISP_HI;
+    u8 b3_DATA_8;
+    u8 b3_DATA_LO;
+    u8 b3_DATA_HI;
+    u8 b3_DATA_SX;
+    u8 b3_ADDR_HI;
+    u8 b3_IP_INC_HI;
+    u8 b3_IP_HI;
+
+    /*
+    DISP-HI
+    DATA-HI
+    SEG-LO
+    CS-LO
+    */
+    u8 byte4;
+    u8 b4_DISP_HI;
+    u8 b4_DATA_HI;
+    u8 b4_SEG_LO;
+    u8 b4_CS_LO;
+
+    /*
+    DATA-LO
+    DATA-8
+    DATA-SX
+    SEG-HI
+    CS-HI
+    */
+    u8 byte5;
+    u8 b5_DATA_LO;
+    u8 b5_DATA_8;
+    u8 b5_DATA_SX;
+    u8 b5_SEG_HI;
+    u8 b5_CS_HI;
+
+    /*
+    DATA-HI
+    */
+    u8 byte6;
+    u8 b6_DATA_HI;
+
 };
 
 // Decoder class
@@ -148,5 +170,14 @@ public:
 
     void printInstruction() const;
 };
+
+
+inline std::string toBinary(u8 byte) {
+    std::string result;
+    for (int i = 7; i >= 0; --i) {
+        result += ((byte >> i) & 1) ? '1' : '0';
+    }
+    return result;
+}
 
 #endif /* DECODER_HPP */

@@ -19,7 +19,12 @@ uint8_t CPU::readCurrent() {
     return byte;
 }
 
-void CPU::step() {
+u8 CPU::readAtIpWithOffset(u32 off) {
+    return u8(mem.read(regs.cs, regs.ip+off));
+}
+
+void CPU::step()
+{
     fetch();
     decoder.decode(regs.ip);
     current = decoder.current;
@@ -47,32 +52,32 @@ void CPU::decode() {
 
 
 u16 CPU::calculateEffectiveAddress() {
-    u8 MOD = current.mod;
-    u8 RM  = current.rm;
+    // u8 MOD = current.mod;
+    // u8 RM  = current.rm;
 
-    //assert(MOD != 0b11 && "Not yet handled and also should not really happen");
+    // //assert(MOD != 0b11 && "Not yet handled and also should not really happen");
 
-    u16 address = 0;
+    // u16 address = 0;
 
-    switch (RM) {
-        case 0b000: address = regs.bx + regs.si; break;  // (BX)+(SI)
-        case 0b001: address = regs.bx + regs.di; break;  // (BX)+(DI)
-        case 0b010: address = regs.bp + regs.si; break;  // (BP)+(SI)
-        case 0b011: address = regs.bp + regs.di; break;  // (BP)+(DI)
-        case 0b100: address = regs.si; break;       // (SI)
-        case 0b101: address = regs.di; break;       // (DI)
-        case 0b110:
-            if (MOD == 0b00) return current.disp;      // DIRECT ADDRESS
-            else address = regs.bp; break;          // (BP) + D8/D16
-        case 0b111: address = regs.bx; break;       // (BX)
-        default: current.type = ERROR; break;
-    }
+    // switch (RM) {
+    //     case 0b000: address = regs.bx + regs.si; break;  // (BX)+(SI)
+    //     case 0b001: address = regs.bx + regs.di; break;  // (BX)+(DI)
+    //     case 0b010: address = regs.bp + regs.si; break;  // (BP)+(SI)
+    //     case 0b011: address = regs.bp + regs.di; break;  // (BP)+(DI)
+    //     case 0b100: address = regs.si; break;       // (SI)
+    //     case 0b101: address = regs.di; break;       // (DI)
+    //     case 0b110:
+    //         if (MOD == 0b00) return current.disp;      // DIRECT ADDRESS
+    //         else address = regs.bp; break;          // (BP) + D8/D16
+    //     case 0b111: address = regs.bx; break;       // (BX)
+    //     default: current.type = ERROR; break;
+    // }
 
-    // Apply displacement if MOD requires it
-    if (MOD == 0b01) address += static_cast<int8_t>(current.disp);   // 8-bit sign-extended displacement
-    if (MOD == 0b10) address += static_cast<int16_t>(current.disp);  // 16-bit displacement
+    // // Apply displacement if MOD requires it
+    // if (MOD == 0b01) address += static_cast<int8_t>(current.disp);   // 8-bit sign-extended displacement
+    // if (MOD == 0b10) address += static_cast<int16_t>(current.disp);  // 16-bit displacement
 
-    return address;
+    // return address;
 }
 
 u16 CPU::readRegister(u8 idx) { // idx = reg or rm
@@ -136,13 +141,6 @@ void CPU::_jmp() {
 
 
 void CPU::execute() {
-
-
-    if(current.type == MOV) {
-        _mov();
-    }
-
-
 
 }
 

@@ -51,6 +51,7 @@ public:
     void fetch();
 
     u8 readNext();
+    u8 readAtIpWithOffset(u32 off);
 
     u8 readCurrent();
 

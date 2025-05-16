@@ -18,6 +18,8 @@ public:
         return mem[addr];
     }
 
+    
+
 
 
     void write(uint16_t seg, uint16_t offset, u8 value) {
