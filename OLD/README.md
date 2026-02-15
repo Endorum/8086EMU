@@ -39,6 +39,7 @@ The decoding is rather complicated, the resource for this can be found in the Re
 
 
 ### MOD = 11 (Register Mode)
+
 | R/M | W=0 | W=1 |
 |-----|-----|-----|
 | 000 | AL  | AX  |
